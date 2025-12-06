@@ -1,7 +1,9 @@
 package com.gruposti.comicvine_api_backend.service;
 
 import com.gruposti.comicvine_api_backend.client.ComicVineClient;
+import com.gruposti.comicvine_api_backend.client.response.ComicVineCharacterDetailResponse;
 import com.gruposti.comicvine_api_backend.client.response.ComicVineCharacterResponse;
+import com.gruposti.comicvine_api_backend.model.CharacterDetailsResponseDTO;
 import com.gruposti.comicvine_api_backend.model.CharacterListResponseDTO;
 import com.gruposti.comicvine_api_backend.model.CharacterListResponseDTO.Character;
 import com.gruposti.comicvine_api_backend.model.CharacterListResponseDTO.CharacterListData;
@@ -53,4 +55,63 @@ public class CharacterService {
 
         return finalResponse;
     }
+
+    public CharacterDetailsResponseDTO getCharacterDetails(String id) {
+
+        String resourceId = "4005-" + id;
+        String resourcePath = String.format("/character/%s/", resourceId);
+
+        ComicVineCharacterDetailResponse externalResponse = comicVineClient.buildRequest(resourcePath)
+                .retrieve()
+                .bodyToMono(ComicVineCharacterDetailResponse.class)
+                .block();
+
+        if (externalResponse == null || externalResponse.getResults() == null) {
+            throw new RuntimeException("Error: No se recibió respuesta válida de Comic Vine.");
+        }
+
+
+        ComicVineCharacterDetailResponse.CharacterDetail detail =
+                externalResponse.getResults();
+
+        return mapToCharacterDetailsDTO(detail);
+    }
+
+
+
+    private CharacterDetailsResponseDTO mapToCharacterDetailsDTO(
+            ComicVineCharacterDetailResponse.CharacterDetail rawDetail) {
+
+        CharacterDetailsResponseDTO.CharacterDetailsData detailsData =
+                new CharacterDetailsResponseDTO.CharacterDetailsData();
+
+        detailsData.setId(rawDetail.getId());
+        detailsData.setName(rawDetail.getName());
+        detailsData.setDescription(rawDetail.getDeck());
+
+        if (rawDetail.getImage() != null) {
+            detailsData.setImage(rawDetail.getImage().getSuperUrl());
+        } else {
+            detailsData.setImage(null);
+        }
+
+        List<CharacterDetailsResponseDTO.Comic> comics =
+                rawDetail.getIssueCredits() == null ? List.of() :
+                        rawDetail.getIssueCredits().stream()
+                                .map(credit -> {
+                                    CharacterDetailsResponseDTO.Comic comic =
+                                            new CharacterDetailsResponseDTO.Comic();
+                                    comic.setName(credit.getName());
+                                    return comic;
+                                })
+                                .toList();
+
+        detailsData.setComics(comics);
+
+        CharacterDetailsResponseDTO responseDTO = new CharacterDetailsResponseDTO();
+        responseDTO.setData(detailsData);
+
+        return responseDTO;
+    }
+
 }

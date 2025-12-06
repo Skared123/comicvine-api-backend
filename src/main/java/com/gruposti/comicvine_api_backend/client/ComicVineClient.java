@@ -12,14 +12,14 @@ public class ComicVineClient {
 
     private final WebClient webClient;
     private final String apiKey;
-    private final String baseUrl; // ← debes agregar esto
+    private final String baseUrl;
 
     public ComicVineClient(WebClient webClient,
                            @Value("${comicvine.api.key}") String apiKey,
-                           @Value("${comicvine.api.base-url}") String baseUrl) { // ← agregar aquí
+                           @Value("${comicvine.api.base-url}") String baseUrl) {
         this.webClient = webClient;
         this.apiKey = apiKey;
-        this.baseUrl = baseUrl; // ← asignarlo
+        this.baseUrl = baseUrl;
     }
 
     public WebClient.RequestHeadersSpec<?> buildRequest(String resourcePath, int limit) {
@@ -29,6 +29,19 @@ public class ComicVineClient {
                 .queryParam("api_key", apiKey)
                 .queryParam("format", "json")
                 .queryParam("limit", limit)
+                .build()
+                .toUri();
+
+        System.out.println("👉 URL final: " + uri);
+
+        return webClient.get().uri(uri);
+    }
+
+    public WebClient.RequestHeadersSpec<?> buildRequest(String resourcePath) {
+        URI uri = UriComponentsBuilder.fromUriString(baseUrl)
+                .path("/api" + resourcePath)
+                .queryParam("api_key", apiKey)
+                .queryParam("format", "json")
                 .build()
                 .toUri();
 
