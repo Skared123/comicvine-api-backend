@@ -18,11 +18,14 @@ public class CharacterController {
     }
 
     @GetMapping
-    public ResponseEntity<CharacterListResponseDTO> getCharacters(@RequestParam(defaultValue = "25") int limit) {
+    public ResponseEntity<CharacterListResponseDTO> getCharacters(@RequestParam(required = false) Integer limit) {
+        if (limit == null) {
+            limit = 25;
+        }
         CharacterListResponseDTO response = characterService.getCharacters(limit);
-
         return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/{id}")
     public CharacterDetailsResponseDTO getCharacterDetails(@PathVariable String id) {

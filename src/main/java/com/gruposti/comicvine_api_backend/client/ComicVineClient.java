@@ -32,8 +32,6 @@ public class ComicVineClient {
                 .build()
                 .toUri();
 
-        System.out.println("👉 URL final: " + uri);
-
         return webClient.get().uri(uri);
     }
 
@@ -44,8 +42,6 @@ public class ComicVineClient {
                 .queryParam("format", "json")
                 .build()
                 .toUri();
-
-        System.out.println("👉 URL final: " + uri);
 
         return webClient.get().uri(uri);
     }

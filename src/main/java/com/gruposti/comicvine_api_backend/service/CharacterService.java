@@ -3,6 +3,8 @@ package com.gruposti.comicvine_api_backend.service;
 import com.gruposti.comicvine_api_backend.client.ComicVineClient;
 import com.gruposti.comicvine_api_backend.client.response.ComicVineCharacterDetailResponse;
 import com.gruposti.comicvine_api_backend.client.response.ComicVineCharacterResponse;
+import com.gruposti.comicvine_api_backend.exception.CharacterNotFoundException;
+import com.gruposti.comicvine_api_backend.exception.InvalidLimitException;
 import com.gruposti.comicvine_api_backend.model.CharacterDetailsResponseDTO;
 import com.gruposti.comicvine_api_backend.model.CharacterListResponseDTO;
 import com.gruposti.comicvine_api_backend.model.CharacterListResponseDTO.Character;
@@ -20,6 +22,11 @@ public class CharacterService {
     }
 
     public CharacterListResponseDTO getCharacters(int limit) {
+
+        if (limit < 1 || limit > 100) {
+            throw new InvalidLimitException("Provided value for limit param is invalid.");
+        }
+
 
         String resourcePath = "/characters/";
 
@@ -67,7 +74,7 @@ public class CharacterService {
                 .block();
 
         if (externalResponse == null || externalResponse.getResults() == null) {
-            throw new RuntimeException("Error: No se recibió respuesta válida de Comic Vine.");
+            throw new CharacterNotFoundException("Character with id " + id + " not found.");
         }
 
 
